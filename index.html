@@ -147,6 +147,12 @@
                 max-width: 900px;
             }
 
+            #terminal-repl-loading {
+                font-family: "JetBrains Mono", monospace;
+                font-size: 14px;
+                margin-left: 8px;
+                margin-top: 6px;
+            }
 
             .xterm {
                 padding: 0.5rem;
@@ -760,6 +766,8 @@
                     replNotice.style.background = "rgba(245, 158, 11, 0.15)";
                     replNotice.style.borderColor = "var(--warning)";
                     replNotice.innerHTML = '<strong>❌ PyREPL not supported, please use Chrome or Edge.</strong>';
+                    document.getElementById("terminal-repl").remove();
+                    document.getElementById("terminal-buttons").remove();
                     return
                 }
 
@@ -957,6 +965,7 @@
                 }
 
                 await initPyREPL();
+                document.getElementById("terminal-repl-loading").remove()
             };
         </script>
     </head>
@@ -978,8 +987,10 @@
                         <div class="card-body">
                             <div id="repl-notice" style="background: rgba(99, 102, 241, 0.15); border: 1px solid var(--accent-primary); border-radius: 0.5rem; padding: 0.75rem 1rem; margin-bottom: 1rem; color: var(--text-primary); font-size: 0.875rem; display: none;">
                             </div>
-                            <div id="terminal-repl"></div>
-                            <div class="button-container" style="margin-top: 1rem;">
+                            <div id="terminal-repl">
+                                <div id="terminal-repl-loading">Loading interactive REPL...</div>
+                            </div>
+                            <div id="terminal-buttons" class="button-container" style="margin-top: 1rem;">
                                 <button id="repl-restart" disabled>🔄 Restart REPL</button>
                                 <button id="repl-clear" disabled>🗑 Clear</button>
                             </div>
