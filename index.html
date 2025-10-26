@@ -237,14 +237,6 @@
                 color: white;
                 border-color: transparent;
             }
-
-            .mode-content {
-                display: none;
-            }
-
-            .mode-content.active {
-                display: block;
-            }
         </style>
         <script
             src="https://unpkg.com/xterm@4.18.0/lib/xterm.js"
@@ -758,6 +750,7 @@
 
             window.onload = async () => {
                 let replTerminal = null;
+                let currentMode = "tab";
 
                 // Show appropriate REPL notice based on browser
                 const replNotice = document.getElementById("repl-notice");
@@ -771,6 +764,21 @@
                     return
                 }
 
+                document.querySelectorAll('.mode-tab').forEach(tab => {
+                    tab.addEventListener('click', async () => {
+                        const mode = tab.dataset.mode;
+
+                        // Update active tab
+                        document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+                        tab.classList.add('active');
+
+                        // Restart REPL in selected mode
+                        currentMode = mode
+                        await restartPyRepl()
+                    });
+                });
+
+
                 // PyREPL buttons
                 const replRestartButton = document.getElementById("repl-restart");
                 const replClearButton = document.getElementById("repl-clear");
@@ -782,7 +790,7 @@
                     }
                 });
 
-                replRestartButton.addEventListener("click", async () => {
+                const restartPyRepl = async () => {
                     if (replTerminal) {
                         replTerminal.element.remove()
                         replTerminal = null;
@@ -791,7 +799,9 @@
                     replClearButton.setAttribute("disabled", true);
                     replLoadingText.style.display = "block";
                     await initPyREPL();
-                });
+                }
+
+                replRestartButton.addEventListener("click", restartPyRepl);
 
                 // PyREPL initialization
                 async function initPyREPL() {
@@ -932,8 +942,9 @@
                         const versionInt = Module.HEAPU32[Module._Py_Version >>> 2];
                         const major = (versionInt >>> 24) & 0xff;
                         const minor = (versionInt >>> 16) & 0xff;
+                        const suffix = currentMode === "f8" ? "-f8" : "";
                         Module.FS.mkdirTree(`/lib/python${major}.${minor}/lib-dynload/`);
-                        const resp = await fetch(`python${major}.${minor}.zip?v=${Date.now()}`);
+                        const resp = await fetch(`python${major}.${minor}${suffix}.zip?v=${Date.now()}`);
                         const stdlibBuffer = await resp.arrayBuffer();
                         Module.FS.writeFile(`/lib/python${major}${minor}.zip`, new Uint8Array(stdlibBuffer), { canOwn: true });
                     }
@@ -980,21 +991,21 @@
                     </p>
                 </header>
 
-                <div id="repl-mode" class="mode-content active">
-                    <div class="card">
-                        <div class="card-header">
-                            <h2 class="card-title">Interactive REPL</h2>
+                <div class="mode-tabs">
+                    <button class="mode-tab active" data-mode="tab">&lt;TAB&gt;&lt;TAB&gt; mode</button>
+                    <button class="mode-tab" data-mode="f8"><pre>&lt;TAB&gt;&lt;F8&gt;</pre> mode</button>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <div id="repl-notice" style="background: rgba(99, 102, 241, 0.15); border: 1px solid var(--accent-primary); border-radius: 0.5rem; padding: 0.75rem 1rem; margin-bottom: 1rem; color: var(--text-primary); font-size: 0.875rem; display: none;">
                         </div>
-                        <div class="card-body">
-                            <div id="repl-notice" style="background: rgba(99, 102, 241, 0.15); border: 1px solid var(--accent-primary); border-radius: 0.5rem; padding: 0.75rem 1rem; margin-bottom: 1rem; color: var(--text-primary); font-size: 0.875rem; display: none;">
-                            </div>
-                            <div id="terminal-repl">
-                                <div id="terminal-repl-loading">Loading interactive REPL...</div>
-                            </div>
-                            <div id="terminal-buttons" class="button-container" style="margin-top: 1rem;">
-                                <button id="repl-restart" disabled>🔄 Restart REPL</button>
-                                <button id="repl-clear" disabled>🗑 Clear</button>
-                            </div>
+                        <div id="terminal-repl">
+                            <div id="terminal-repl-loading">Loading interactive REPL...</div>
+                        </div>
+                        <div id="terminal-buttons" class="button-container" style="margin-top: 1rem;">
+                            <button id="repl-restart" disabled>🔄 Restart REPL</button>
+                            <button id="repl-clear" disabled>🗑 Clear</button>
                         </div>
                     </div>
                 </div>
