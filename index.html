@@ -774,6 +774,7 @@
                 // PyREPL buttons
                 const replRestartButton = document.getElementById("repl-restart");
                 const replClearButton = document.getElementById("repl-clear");
+                const replLoadingText = document.getElementById("terminal-repl-loading");
 
                 replClearButton.addEventListener("click", () => {
                     if (replTerminal) {
@@ -783,12 +784,12 @@
 
                 replRestartButton.addEventListener("click", async () => {
                     if (replTerminal) {
-                        const container = document.getElementById("terminal-repl");
-                        container.innerHTML = '';
+                        replTerminal.element.remove()
                         replTerminal = null;
                     }
                     replRestartButton.setAttribute("disabled", true);
                     replClearButton.setAttribute("disabled", true);
+                    replLoadingText.style.display = "block";
                     await initPyREPL();
                 });
 
@@ -956,6 +957,7 @@
                         await createEmscriptenModule(emscriptenSettings);
                         replRestartButton.removeAttribute("disabled");
                         replClearButton.removeAttribute("disabled");
+                        replLoadingText.style.display = "none"
                     } catch (e) {
                         console.warn(e);
                         if (window.Module) {
@@ -965,7 +967,6 @@
                 }
 
                 await initPyREPL();
-                document.getElementById("terminal-repl-loading").remove()
             };
         </script>
     </head>
