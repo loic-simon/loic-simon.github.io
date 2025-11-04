@@ -73,7 +73,18 @@
                 font-size: 1.25rem;
                 color: var(--text-secondary);
                 max-width: 600px;
+                margin: 0 auto 0.3rem;
+            }
+
+            .links {
+                font-size: 1rem;
+                color: var(--text-muted);
+                max-width: 600px;
                 margin: 0 auto 2rem;
+            }
+
+            .links>a {
+                color: var(--accent-primary);
             }
 
             .card {
@@ -207,35 +218,6 @@
 
             .github-link:hover {
                 color: var(--accent-secondary);
-            }
-
-            .mode-tabs {
-                display: flex;
-                gap: 0.5rem;
-                margin-bottom: 2rem;
-            }
-
-            .mode-tab {
-                padding: 0.75rem 2rem;
-                background: var(--bg-tertiary);
-                color: var(--text-secondary);
-                border: 1px solid var(--border-color);
-                border-radius: 0.5rem;
-                cursor: pointer;
-                font-size: 1rem;
-                font-weight: 600;
-                transition: all 0.2s;
-            }
-
-            .mode-tab:hover {
-                border-color: var(--accent-primary);
-                color: var(--text-primary);
-            }
-
-            .mode-tab.active {
-                background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-                color: white;
-                border-color: transparent;
             }
         </style>
         <script
@@ -750,7 +732,6 @@
 
             window.onload = async () => {
                 let replTerminal = null;
-                let currentMode = "tab";
 
                 // Show appropriate REPL notice based on browser
                 const replNotice = document.getElementById("repl-notice");
@@ -763,21 +744,6 @@
                     document.getElementById("terminal-buttons").remove();
                     return
                 }
-
-                document.querySelectorAll('.mode-tab').forEach(tab => {
-                    tab.addEventListener('click', async () => {
-                        const mode = tab.dataset.mode;
-
-                        // Update active tab
-                        document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
-                        tab.classList.add('active');
-
-                        // Restart REPL in selected mode
-                        currentMode = mode
-                        await restartPyRepl()
-                    });
-                });
-
 
                 // PyREPL buttons
                 const replRestartButton = document.getElementById("repl-restart");
@@ -942,9 +908,8 @@
                         const versionInt = Module.HEAPU32[Module._Py_Version >>> 2];
                         const major = (versionInt >>> 24) & 0xff;
                         const minor = (versionInt >>> 16) & 0xff;
-                        const suffix = currentMode === "f8" ? "-f8" : "";
                         Module.FS.mkdirTree(`/lib/python${major}.${minor}/lib-dynload/`);
-                        const resp = await fetch(`python${major}.${minor}${suffix}.zip?v=${Date.now()}`);
+                        const resp = await fetch(`python${major}.${minor}.zip?v=${Date.now()}`);
                         const stdlibBuffer = await resp.arrayBuffer();
                         Module.FS.writeFile(`/lib/python${major}${minor}.zip`, new Uint8Array(stdlibBuffer), { canOwn: true });
                     }
@@ -989,12 +954,12 @@
                     <p class="subtitle">
                         An interactive WebAssembly demo
                     </p>
+                    <p class="links">
+                        <a href="https://discuss.python.org/t/looking-for-feedback-on-adding-import-autocomplete-to-pyrepl/82281" target="_blank">Discussion</a>
+                        • <a href="https://github.com/python/cpython/issues/140870" target="_blank">Issue</a>
+                        • <a href="https://github.com/python/cpython/pull/140871" target="_blank">PR</a>
+                    </p>
                 </header>
-
-                <div class="mode-tabs">
-                    <button class="mode-tab active" data-mode="tab">&lt;TAB&gt;&lt;TAB&gt; mode</button>
-                    <button class="mode-tab" data-mode="f8"><pre>&lt;TAB&gt;&lt;F8&gt;</pre> mode</button>
-                </div>
 
                 <div class="card">
                     <div class="card-body">
